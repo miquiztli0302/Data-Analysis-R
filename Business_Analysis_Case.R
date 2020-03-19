@@ -11,7 +11,7 @@ library(caret)
 library(rpart)
 
 # Loading 2017 Q1 sample customer data
-# View variables and data to see if any cleaning is necessary
+# Check variables and data to see if any cleaning is necessary
 active_customer <- read.csv(file = "~/Documents/Data/active_customer.csv", head = TRUE)
 View(active_customer)
 active_customer.head <- head(active_customer, 100)
@@ -20,6 +20,7 @@ active_customer.head
 str(active_customer)
 
 summary(active_customer)
+dim(activ_customer)
 
 # Removing offending and unnecessary columns
 names(active_customer)
@@ -28,7 +29,7 @@ drops <- c("X", "SignupGender",
            )
 
 active_customer <- active_customer[ , !(names(active_customer) %in% drops)]
-View(active_customer)
+View(active_customer) #View data after unnecessary columns dropped
 names(active_customer)
 
 # Rename variables/columns 
@@ -50,13 +51,11 @@ active_customer <- rename(active_customer,
                            "employment" = "LoanApplicationsEmployment",
                            "age" = "SignupAge",
                            "education" = "LoanApplicationsHighestEducation")
-View(active_customer)
+View(active_customer) #View data after changed names
 
 # Check for missing and null observations 
-dim(active_customer)
-
-active_customer <- na.omit(active_customer)
-str(active_customer)
+active_customer <- na.omit(active_customer) #Drop NA values
+str(active_customer) 
 summary(active_customer)
 
 # Convert Variable Classification: characters and dates
@@ -70,10 +69,10 @@ active_customer$app_date <- as.Date(active_customer$app_date, format = "%Y-%m-%d
 
 summary(active_customer$app_date)
 str(active_customer$app_date)
-max(active_customer$app_date)
+max(active_customer$app_date) #Use this data as the cutoff threshold
 
 ## Create active customer variable
-## Create cutoff threshold (October 3, 2019)
+## Create cutoff threshold (max = October 3, 2019)
 active_customer1 <- subset(active_customer, active_customer$app_date != 0)
 
 p.seq <- rle(active_customer1$person_id)$lengths
@@ -85,10 +84,9 @@ View(active_customer2)
 cut_off <- max(active_customer2$app_date) - 365
 
 active_customer2$active = ifelse(active_customer2$app_date > cut_off, "Active", "Non-Active")
-View(active_customer2)
 
 dim(active_customer2)
-table(active_customer2$active)
+table(active_customer2$active) # Active cust=53226; Non-active cust=146916
 
 ## Define Customer Retention Rate for Kenyan cust of Q1 of 2017 using "active" variable
 # Retention rate calculation: ((number of customers) - (number of acquired)) / (number of customers)
@@ -96,11 +94,11 @@ final_tab <- table(sampledata2$active)
 active_percentage <- (final_tab[2]/(final_tab[1]+final_tab[2]))*100
 active_percentage
 
-# Histogram: View distribution fo Active vs. Non-Active Customers
+# Histogram: Visualize distribution of Active vs. Non-Active Customers
 p1 <- ggplot(active_customer2, aes(x =as.factor(active), fill=as.factor(active))) + 
         geom_bar() +
-              scale_fill_brewer(palette = "Set1") +
-        xlab("Customer Status") + ylab("Total Count") +
+        scale_fill_brewer(palette = "Set1") +
+            xlab("Customer Status") + ylab("Total Count") +
             ggtitle("Active vs. Non-Active Customer Distribution") 
 p1
 
